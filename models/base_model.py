@@ -219,10 +219,17 @@ class BaseModel(ABC):
                 if hasattr(state_dict, '_metadata'):
                     del state_dict._metadata
 
+                # 移除键名中的"module."前缀
+                new_state_dict = {}
+                for k, v in state_dict.items():
+                    # 移除开头的"module."
+                    name = k[7:] if k.startswith('module.') else k
+                    new_state_dict[name] = v
+
                 # patch InstanceNorm checkpoints prior to 0.4
                 # for key in list(state_dict.keys()):  # need to copy keys here because we mutate in loop
                 #    self.__patch_instance_norm_state_dict(state_dict, net, key.split('.'))
-                net.load_state_dict(state_dict)
+                net.load_state_dict(new_state_dict)
 
     def print_networks(self, verbose):
         """Print the total number of parameters in the network and (if verbose) network architecture
